@@ -1,91 +1,143 @@
-namespace aula_03;
+using aula_03;
 
-public class Televisao
+namespace aula_03.Test;
+
+[TestClass]
+public class TelevisaoTest
 {
-    //O método construtor possui o mesmo nome da classe. 
-    // Ele não possui retorno (nem mesmo o void)
-    //Este método é executado sempre que uma instancia da classe
-    //é criada.
-    //Por padrão, o C# cria um método construtor publico vazio,
-    //mas podemos criar métodos construtores com outras
-    //visibilidades e recebendo parametros, se necessário.
-    public Televisao(float tamanho)
+    [TestMethod]
+    public void Dado_Tamanho_21_Deve_Retornar_Excecao()
     {
-        if (tamanho < TAMANHO_MINIMO || tamanho > TAMANHO_MAXIMO)
-        {
-            throw new ArgumentOutOfRangeException($"O tamanho({tamanho}) não é suportado!");
-        }
-        Tamanho = tamanho;
-        Volume = VOLUME_PADRAO;
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => new Televisao(21f), "O tamanho(21) não é suportado!");
     }
 
-    //Optamos pela utilização da constante para tornar o código mais legível.
-    private const float TAMANHO_MINIMO = 22;
-    private const float TAMANHO_MAXIMO = 80;
-    private const int VOLUME_MAXIMO = 12;
-    private const int VOLUME_MINIMO = 0;
-    private const int VOLUME_PADRAO = 10;
-
-    private int _ultimoVolume = VOLUME_PADRAO;
-
-
-
-    //Get: permite que seja executada a 
-    //leitura do valor atual da propriedade
-    //Set: permite que seja atibuído um 
-    //valor para a propriedade
-
-    //classes, propriedades e métodos possuem modificadores de acesso
-    //public: visiveis a todo o projeto
-    //internal: visiveis somente no namespace - padrão
-    //protected: visiveis somente na classe e nas classes que herdam
-    //private: visiveis somente na classe que foram criados
-    public float Tamanho { get; }
-    public int Resolucao { get; set; }
-    public int Volume { get; private set; }
-    public int Canal { get; set; }
-    public bool Estado { get; set; }
-
-    public void AumentarVolume()
+    [TestMethod]
+    public void Dado_Tamanho_81_Deve_Retornar_Excecao()
     {
-        if (Volume < VOLUME_MAXIMO)
-        {
-            Volume++;
-            _ultimoVolume = Volume;
-        }
-        else
-        {
-            Console.WriteLine("A TV já está no volume máximo permitido");
-        }
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => new Televisao(81f), "O tamanho(81) não é suportado!");
     }
 
-    public void DiminuirVolume()
+    [TestMethod]
+    public void Dado_Tamanho_25_Deve_Criar_Instancia()
     {
-        if (Volume > VOLUME_MINIMO)
-        {
-            Volume--;
-            _ultimoVolume = Volume;
-        }
-        else
-        {
-            Console.WriteLine("A TV já está no volume mínimo permitido");
-        }
+        const float tamanho = 25f;
+
+        Televisao televisao = new Televisao(tamanho);
+        Assert.IsInstanceOfType(televisao, typeof(Televisao));
+        Assert.AreEqual(tamanho, televisao.Tamanho);
     }
 
-    //1 botao de mudo -  toggle (on/off)
-    //Volume = x; Volume = 0; Volume = x;
-    public void AlternarModoMudo()
+    [TestMethod]
+    public void Deve_Criar_Instancia_Com_Volume_10()
     {
-        if (Volume > VOLUME_MINIMO)
-        {
-            _ultimoVolume = Volume;
-            Volume = VOLUME_MINIMO;
-            Console.WriteLine("A TV está no modo MUTE.");
-        }
-        else
-        {
-            Volume = _ultimoVolume;
-            Console.WriteLine($"O volume da TV é: {Volume}.");
-        }
+        const int volumePadrao = 10;
+
+        Televisao televisao = new Televisao(25f);
+        Assert.AreEqual(volumePadrao, televisao.Volume);
+    }
+
+    [TestMethod]
+    public void Deve_Ter_Volume_11_Apos_Aumentar_Volume()
+    {
+        Televisao televisao = new Televisao(25f);
+        televisao.AumentarVolume();
+        Assert.AreEqual(11, televisao.Volume);
+    }
+
+    [TestMethod]
+    public void Deve_Ter_Volume_9_Apos_Diminuir_Volume()
+    {
+        Televisao televisao = new Televisao(25f);
+        televisao.DiminuirVolume();
+        Assert.AreEqual(9, televisao.Volume);
+    }
+
+    [TestMethod]
+    public void Deve_Ter_Volume_0_Ao_Mutar()
+    {
+        Televisao televisao = new Televisao(25f);
+        televisao.AlternarModoMudo();
+        Assert.AreEqual(0, televisao.Volume);
+    }
+
+    [TestMethod]
+    public void Deve_Restaurar_Volume_Anterior_Ao_Desmutar()
+    {
+        Televisao televisao = new Televisao(25f);
+        const int volumeInicial = 10;
+
+        televisao.AlternarModoMudo(); // Muta
+        televisao.AlternarModoMudo(); // Desmuta
+
+        Assert.AreEqual(volumeInicial, televisao.Volume);
+    }
+
+    [TestMethod]
+    public void Deve_Manter_Estado_Correto_Com_Multiplas_Alternancias_Mudo()
+    {
+        Televisao televisao = new Televisao(25f);
+        const int volumeInicial = 10;
+
+        televisao.AlternarModoMudo(); // Muta
+        Assert.AreEqual(0, televisao.Volume);
+
+        televisao.AlternarModoMudo(); // Desmuta
+        Assert.AreEqual(volumeInicial, televisao.Volume);
+
+        televisao.AlternarModoMudo(); // Muta novamente
+        Assert.AreEqual(0, televisao.Volume);
+    }
+
+    [TestMethod]
+    public void Deve_Manter_Mudo_Ao_Tentar_Alterar_Volume()
+    {
+        Televisao televisao = new Televisao(25f);
+        const int volumeInicial = 10;
+
+        televisao.AlternarModoMudo();
+        Assert.AreEqual(0, televisao.Volume);
+
+        televisao.AumentarVolume();
+        Assert.AreEqual(0, televisao.Volume);
+
+        televisao.DiminuirVolume();
+        Assert.AreEqual(0, televisao.Volume);
+
+        televisao.AlternarModoMudo();
+        Assert.AreEqual(volumeInicial, televisao.Volume);
+    }
+
+    [TestMethod]
+    public void Deve_Aumentar_Canal_Em_1()
+    {
+        Televisao televisao = new Televisao(25f);
+        int canalInicial = televisao.Canal;
+        televisao.AumentarCanal();
+        Assert.AreEqual(canalInicial + 1, televisao.Canal);
+    }
+
+    [TestMethod]
+    public void Deve_Diminuir_Canal_Em_1()
+    {
+        Televisao televisao = new Televisao(25f);
+        televisao.AumentarCanal(); // Garante que há um canal acima de 0
+        int canalInicial = televisao.Canal;
+        televisao.DiminuirCanal();
+        Assert.AreEqual(canalInicial - 1, televisao.Canal);
+    }
+
+    [TestMethod]
+    public void Deve_Definir_Canal_Pelo_Numero()
+    {
+        Televisao televisao = new Televisao(25f);
+        televisao.DefinirCanal(505);
+        Assert.AreEqual(505, televisao.Canal);
+    }
+
+    [TestMethod]
+    public void Deve_Retornar_Erro_Para_Canal_Invalido()
+    {
+        Televisao televisao = new Televisao(25f);
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => televisao.DefinirCanal(-5));
     }
 }
